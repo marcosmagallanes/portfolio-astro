@@ -1,0 +1,128 @@
+---
+import { Icon } from "astro-icon";
+
+import { getNowPlaying } from "../api/spotifyconnect.js";
+
+let data: {
+  isPlaying: boolean;
+  songUrl: URL;
+  title: String;
+  artist: String;
+  artistUrl: URL;
+  album?: String;
+  albumImageUrl?: String;
+};
+
+const response = await getNowPlaying();
+
+if (response.status !== 204 && response.status < 400) {
+  const songData = await response.json();
+
+  data = {
+    isPlaying: songData.is_playing,
+    title: songData.item.name,
+    artist: songData.item.artists
+      .map((_artist: { name: String }) => _artist.name)
+      .join(", "),
+    artistUrl: songData.item.artists[0].external_urls.spotify,
+    album: songData.item.album.name,
+    albumImageUrl: songData.item.album.images[0].url,
+    songUrl: songData.item.external_urls.spotify,
+  };
+}
+---
+
+<div
+  class="relative flex items-center justify-center px-3 py-2 mt-3 mb-4 border-2 border-slate-300 gap-x-3 rounded-xl"
+>
+  <span
+    class="text-sm select-none absolute inline-block top-0 px-1 -mt-2.5 leading-none bg-slate-500 left-3"
+  >
+    {
+      data?.isPlaying ? (
+        <>
+          now playing
+          <Icon name="mdi:play" />
+          <Icon name="mdi:play" />
+        </>
+      ) : (
+        <>
+          not playing
+          <Icon name="mdi:stop" />
+        </>
+      )
+    }
+  </span>
+  <span
+    class="select-none absolute inline-block top-0 px-1 -mt-2.5 leading-none bg-slate-500 right-3"
+  >
+    <a
+      href="https://www.last.fm/user/marcosm_dev"
+      target="_blank"
+      rel="noopener noreferrer"
+      title="last.fm - view my music"
+      ><Icon name="mdi:lastfm" />
+    </a>
+  </span>
+  <div class="grid max-w-full">
+    {
+      data?.songUrl ? (
+        <>
+          <a
+            class="text-xs font-bold truncate text-slate-200 hover:underline sm:text-sm md:text-base"
+            href={data?.songUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            title={`${data?.title} - on Spotify`}
+          >
+            {data?.title}
+          </a>
+        </>
+      ) : (
+        <p class="text-xs font-medium text-slate-200 sm:text-sm md:text-base">
+          Not Playing
+        </p>
+      )
+    }
+    {
+      data?.artistUrl ? (
+        <>
+          <a
+            class="text-xs truncate text-slate-200 max-w-max hover:underline sm:text-sm md:text-base"
+            href={data?.artistUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            title={`${data?.artist} - on Spotify`}
+          >
+            {data?.artist}
+          </a>
+        </>
+      ) : (
+        <p class="text-xs truncate text-slate-200 max-w-max sm:text-sm md:text-base">
+          Spotify
+        </p>
+      )
+    }
+  </div>
+</div>
+
+<style>
+  [astro-icon] {
+    @apply h-12 text-slate-200;
+  }
+  span,
+  p,
+  a {
+    @apply text-slate-200;
+    font-family: "Roboto Mono", monospace;
+  }
+  span [astro-icon] {
+    @apply h-4 inline-block;
+  }
+  span [astro-icon="mdi:play"] {
+    @apply first:text-emerald-400 text-emerald-500 last:animate-pulse first:absolute first:animate-ping;
+  }
+  span [astro-icon="mdi:stop"] {
+    @apply text-rose-600;
+  }
+</style>

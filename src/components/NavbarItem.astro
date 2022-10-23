@@ -1,0 +1,20 @@
+---
+import { Icon } from "astro-icon";
+
+const { href, iconName } = Astro.props;
+---
+
+<li>
+  <a href={href}>
+    <Icon name={iconName} />
+  </a>
+</li>
+
+<style>
+  [astro-icon] {
+    @apply h-8 text-slate-300 hover:text-slate-600;
+  }
+  li {
+    @apply mx-1;
+  }
+</style>
